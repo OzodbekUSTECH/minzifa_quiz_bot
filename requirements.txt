@@ -13,10 +13,12 @@ colorama==0.4.6
 fastapi==0.100.0
 frozenlist==1.4.0
 greenlet==2.0.2
+gunicorn==21.2.0
 h11==0.14.0
 idna==3.4
 magic-filter==1.0.10
 multidict==6.0.4
+packaging==23.1
 psycopg2-binary==2.9.6
 pydantic==2.0.3
 pydantic_core==2.3.0
