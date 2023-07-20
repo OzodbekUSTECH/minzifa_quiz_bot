@@ -28,5 +28,3 @@ class Question(Base):
 
     group_id = Column(Integer, ForeignKey("groups.id"))
     group = relationship("GroupQuestion", back_populates="questions")
-
-Base.metadata.create_all(bind=engine)
