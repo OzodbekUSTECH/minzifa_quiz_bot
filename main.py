@@ -131,14 +131,13 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
         await message.reply("Вопрос с указанным номером не принадлежит выбранной группе. Пожалуйста, введите правильный номер.")
         return
     
-    text_with_nbsp = answer.answer
-    text_without_nbsp = text_with_nbsp.replace('&nbsp;', '')
+    
     # Update the message_text with the new horizontal line
     message_text = (
         f"Ответ на вопрос:\n"
         f"<u>{question_number}.{answer.question}</u>\n"
         
-        f"{text_without_nbsp}"
+        f"{answer.answer}"
     )
     kb = types.InlineKeyboardMarkup()
     back_to_topics = types.InlineKeyboardButton("Тематики", callback_data="back_to_topics_for_questions")
