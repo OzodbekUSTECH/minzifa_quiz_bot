@@ -150,7 +150,7 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
     back_to_topics = types.InlineKeyboardButton("Вопросы", callback_data="back_to_topics_for_questions")
     back_to_questions = types.InlineKeyboardButton("Назад", callback_data=f"get_questions_of_group:{group_id}")
     if user.is_superuser:
-        edit_btn =  types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/?question_id={answer.id}"))
+        edit_btn =  types.InlineKeyboardButton(text="Редактировать", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/?question_id={answer.id}"))
         kb.add(edit_btn)
     kb.add(back_to_questions).add(back_to_topics)
 
