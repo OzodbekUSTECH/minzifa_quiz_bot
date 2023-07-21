@@ -56,7 +56,7 @@ async def process_phone_number(message: types.Message, state: FSMContext):
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
         if db_user.is_superuser:
-            create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
+            create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
             kb.add(create_post)
 
         for group in all_groups_of_qestions:
@@ -99,12 +99,12 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
         # The group has only an answer, no questions
         text = (
             f"Ответ:\n"
-            f"<u>{group.name}</u>\n"
+            f"<u>{group.name}</u>\n\n"
             f"{group.questions[0].answer}"
             )
     else:
         # The group has questions
-        all_questions = db.query(Question).filter(Question.group_id == group_id).all()
+        all_questions = db.query(Question).filter(Question.group_id == group_id).order_by('question_number').all()
 
         text = ""
         for question in all_questions:
@@ -113,7 +113,7 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
         text += "\nНапишите номер вопроса, чтобы получить ответ."
 
     kb = types.InlineKeyboardMarkup()
-    back_to_topics = types.InlineKeyboardButton("Тематики", callback_data="back_to_topics_for_questions")
+    back_to_topics = types.InlineKeyboardButton("Вопросы", callback_data="back_to_topics_for_questions")
     kb.add(back_to_topics)
     await callback_query.message.edit_text(text=text, reply_markup=kb, parse_mode="HTML")
     await state.update_data(group_id=group_id)
@@ -141,7 +141,7 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
     # Update the message_text with the new horizontal line
     message_text = (
         f"Ответ на вопрос:\n"
-        f"<u>{question_number}.{answer.question}</u>\n"
+        f"<u>{question_number}.{answer.question}</u>\n\n"
         f"{answer.answer}"
     )
     kb = types.InlineKeyboardMarkup()
@@ -170,7 +170,7 @@ async def get_topics_for_questions_again(callback_query: types.CallbackQuery, st
     all_groups_of_questions = db.query(GroupQuestion).all()
     db_user = db.query(User).filter(User.tg_id == callback_query.from_user.id).first()
     if db_user.is_superuser:
-        create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
+        create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
         kb.add(create_post)
 
     for group in all_groups_of_questions:
