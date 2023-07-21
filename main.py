@@ -20,18 +20,25 @@ dp = Dispatcher(bot, storage=storage)
 
 
 from sqlalchemy import func
-
+class CheckUserState(StatesGroup):
+    put_number = State()
 @dp.message_handler(commands=['start'])
-async def send_welcome(message: types.Message):
-    username = message.from_user.username.lower()
-
-    db_user = db.query(User).filter(func.lower(User.username) == username).first()
+async def send_welcome(message: types.Message, state: FSMContext):
     
+    message.answer("Введите номер телефона:\n*Включительно'+998/+7' и без пробелов!\nНапример:+998905553535")
+    await CheckUserState.put_number.set()
+    
+
+@dp.message_handler(state=CheckUserState.put_number)
+async def process_phone_number(message: types.Message, state: FSMContext):
+    phone_number = message.text
+    db_user = db.query(User).filter(User.phone_number == phone_number).first()
+
     if db_user:
         db_user.tg_id = message.from_user.id
+        db_user.username = message.from_user.username or "Скрытый username"
         db_user.first_name = message.from_user.first_name or "Скрытое имя"
         db_user.last_name = message.from_user.last_name or "Скрытая фамилия"
-        db_user.phone_number = message.contact.phone_number if message.contact else "Скрытый номер телефона"
         db.commit()
 
         kb = types.InlineKeyboardMarkup()
@@ -40,9 +47,27 @@ async def send_welcome(message: types.Message):
         kb.add(create_post)
         for group in all_groups_of_qestions:
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
-        await message.answer("Выберите тематику вопроса:", reply_markup=kb)
+
+        try:
+            await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
+        except aiogram.utils.exceptions.MessageToEditNotFound:
+            # Увеличиваем message_id на 1, если произошла ошибка "MessageToEditNotFound"
+            message.message_id -= 1
+            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
+
+        await state.finish()
     else:
-        pass
+        try:
+            await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text="Номер введен неправильно или у вас нет доступа!\nВведите номер еще раз!\nВключительно '+998/+7' и без пробелов!\n Например: <b>+998905553535</b>\n\nНапишите о проблеме Администратору @UnLuckyLoX")
+        except aiogram.utils.exceptions.MessageToEditNotFound:
+            # Увеличиваем message_id на 1, если произошла ошибка "MessageToEditNotFound"
+            message.message_id -= 1
+            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text="Номер введен неправильно или у вас нет доступа!\nВведите номер еще раз!\nБез +998\n Например: <b>905553535</b>\n\nНапишите о проблеме Администратору @UnLuckyLoX")
+
+        await CheckUserState.put_number.set()
+
 
 
 

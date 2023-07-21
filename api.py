@@ -8,11 +8,13 @@ app = FastAPI()
 
 
 @app.post('/add/username')
-async def add_username(username: str):
-    db_user = db.query(User).filter(User.username == username).first()
-    if db_user:
-        raise HTTPException(status=status.HTTP_400_BAD_REQUEST, detail="Already existing user")
-    new_user = User(username=username)
+async def add_username(phone_number: str = None):
+    
+    db_user_phone = db.query(User).filter(User.phone_number == phone_number).first()
+    if db_user_phone:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone number already exists")
+
+    new_user = User(phone_number=phone_number)
     db.add(new_user)
     db.commit()
 
@@ -36,6 +38,15 @@ async def get_users():
         response.append(data)
     
     return response
+
+
+@app.delete('/user/{user_id}')
+async def delete_user(user_id: int):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    db.delete(db_user)
+    db.commit()
+    db.refresh(db_user)
+
 
 
 
