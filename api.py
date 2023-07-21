@@ -29,7 +29,8 @@ async def get_users():
             "tg_id": user.tg_id,
             "username": user.username,
             "first_name": user.first_name,
-            "last_name": user.last_name
+            "last_name": user.last_name,
+            "phone_number": user.phone_number
         }
 
         response.append(data)
