@@ -102,10 +102,12 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
 
 
 
-@dp.callback_query_handler(lambda c: c.data == "back_to_topics_for_questions")
+@dp.callback_query_handler(lambda c: c.data == "back_to_topics_for_questions", state='*')
 async def get_topics_for_questions_again(callback_query: types.CallbackQuery, state: FSMContext):
     kb = types.InlineKeyboardMarkup()
     all_groups_of_questions = db.query(GroupQuestion).all()
+    create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/")) #ссылка на создание поста
+    kb.add(create_post)
     for group in all_groups_of_questions:
         kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
     await callback_query.message.edit_text("Выберите тематику вопроса:", reply_markup=kb, parse_mode="HTML")
