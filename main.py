@@ -19,12 +19,17 @@ dp = Dispatcher(bot, storage=storage)
 
 
 
+from sqlalchemy import func
 
 # Обновленный обработчик команды /start
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
+    # Получаем username из сообщения и приводим его к нижнему регистру
+    username = message.from_user.username.lower()
+
     # Проверяем, есть ли пользователь с указанным username в базе данных
-    db_user = db.query(User).filter(User.username == message.from_user.username).first()
+    db_user = db.query(User).filter(func.lower(User.username) == username).first()
+    
 
     if db_user:
         # Если пользователь есть в базе данных, обновляем его данные и отправляем приветственное сообщение с кнопками
@@ -43,6 +48,7 @@ async def send_welcome(message: types.Message):
     else:
         # Если пользователя нет в базе данных, отправляем сообщение о том, что у него нет доступа
         await message.answer("Вы не имеете доступа к этому боту.")
+
 
     
 
