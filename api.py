@@ -5,6 +5,25 @@ app = FastAPI()
 
 
 
+
+
+@app.post('/add/username')
+async def add_username(username: str):
+    db_user = db.query(User).filter(User.username == username).first()
+    if db_user:
+        raise HTTPException(status=status.HTTP_400_BAD_REQUEST, detail="Already existing user")
+    db_user.username = username
+    db.add(db_user)
+    db.commit()
+
+
+
+
+
+
+
+
+
 @app.get('/groups', response_model=list[schema.GroupSchema])
 async def get_groups():
     all_groups = db.query(GroupQuestion).order_by('id').all()
