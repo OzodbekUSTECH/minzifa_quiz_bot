@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-from sqlalchemy import String, Column, Integer, Boolean, ForeignKey, Text
+from sqlalchemy import String, Column, Integer, Boolean, ForeignKey, Text, BigInteger
 DATABASE_URL = "postgresql://postgres:77girado@localhost:5432/quez"
 
 
@@ -8,6 +8,20 @@ engine = create_engine(DATABASE_URL, echo=True)
 Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 db = Session()
 Base = declarative_base()
+
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True, index=True)
+    tg_id = Column(BigInteger, index=True)
+    username = Column(String, nullable=True)
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+
+
+
+
 
 
 class GroupQuestion(Base):

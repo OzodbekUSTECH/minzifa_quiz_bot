@@ -22,6 +22,7 @@ dp = Dispatcher(bot, storage=storage)
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message:types.Message):
+    print(message.from_user.username)
     kb = types.InlineKeyboardMarkup()
     all_groups_of_qestions = db.query(GroupQuestion).all()
     create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/")) #ссылка на создание поста
