@@ -161,7 +161,7 @@ async def create_question(new_question: schema.QuestionCreateSchema):
         db.commit()
         db.refresh(new_question)  # Refresh the object to get its updated state from the database
     except:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Incorrect group_id or smth was wrong")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Incorrect group_id or something went wrong")
     return new_question
 
 
@@ -188,18 +188,20 @@ async def delete_question(question_id: int):
 
     if not db_question:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    
     group_id = db_question.group_id
     question_number = db_question.question_number
+
+    # Delete the question from the database
     db.delete(db_question)
     db.commit()
 
     # Get the remaining questions within the same group, sorted by question_number
     remaining_questions = db.query(Question).filter(Question.group_id == group_id).order_by(Question.question_number).all()
 
-    # Renumber the remaining questions within the group
-    for index, question in enumerate(remaining_questions, question_number):
-        if question.question_number != index:
-            question.question_number = index
+    # Renumber the remaining questions within the group starting from 1
+    for index, question in enumerate(remaining_questions, 1):
+        question.question_number = index
 
     db.commit()
 
