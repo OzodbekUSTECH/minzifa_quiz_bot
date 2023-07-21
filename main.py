@@ -20,38 +20,30 @@ dp = Dispatcher(bot, storage=storage)
 
 
 
+# Обновленный обработчик команды /start
 @dp.message_handler(commands=['start'])
-async def send_welcome(message:types.Message):
+async def send_welcome(message: types.Message):
+    # Проверяем, есть ли пользователь с указанным username в базе данных
     db_user = db.query(User).filter(User.username == message.from_user.username).first()
-    print("ПЕРЕД СЛОВИЕМ".encode('utf-8'))
+
     if db_user:
-        print('--------------------------------'.encode('utf-8'))
-        
-        print('--------------------------------'.encode('utf-8'))
-        print('--------------------------------'.encode('utf-8'))
-        
+        # Если пользователь есть в базе данных, обновляем его данные и отправляем приветственное сообщение с кнопками
         db_user.tg_id = message.from_user.id
-        db_user.first_name = message.from_user.first_name if message.from_user.first_name else "Скрытое имя"
-        db_user.last_name = message.from_user.last_name if message.from_user.last_name else "Скрытая фамилия"
+        db_user.first_name = message.from_user.first_name or "Скрытое имя"
+        db_user.last_name = message.from_user.last_name or "Скрытая фамилия"
         db.commit()
-        print(message.from_user.username)
-        print(message.from_user.id)
-        print("КОММИТ".encode('utf-8'))
-        print("КОММИТ".encode('utf-8'))
-        print("КОММИТ".encode('utf-8'))
-        print("КОММИТ".encode('utf-8'))
-        print('--------------------------------'.encode('utf-8'))
-        print('--------------------------------'.encode('utf-8'))
 
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
-        create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/")) #ссылка на создание поста
+        create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
         kb.add(create_post)
         for group in all_groups_of_qestions:
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
         await message.answer("Выберите тематику вопроса:", reply_markup=kb)
     else:
-        return
+        # Если пользователя нет в базе данных, отправляем сообщение о том, что у него нет доступа
+        await message.answer("Вы не имеете доступа к этому боту.")
+
     
 
 class QuestionState(StatesGroup):
