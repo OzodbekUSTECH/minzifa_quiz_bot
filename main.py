@@ -132,7 +132,7 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
         return
     
     text_with_nbsp = answer.answer
-    text_without_nbsp = text_with_nbsp.replace('&nbsp;', '\n')
+    text_without_nbsp = text_with_nbsp.replace('&nbsp;', '')
     # Update the message_text with the new horizontal line
     message_text = (
         f"Ответ на вопрос:\n"
