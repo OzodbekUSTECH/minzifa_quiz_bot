@@ -23,12 +23,12 @@ dp = Dispatcher(bot, storage=storage)
 @dp.message_handler(commands=['start'])
 async def send_welcome(message:types.Message):
     db_user = db.query(User).filter(User.username == message.from_user.username).first()
-    print("ПЕРЕД СЛОВИЕМ")
+    print("ПЕРЕД СЛОВИЕМ".encode('utf-8'))
     if db_user:
-        print('--------------------------------')
+        print('--------------------------------'.encode('utf-8'))
         
-        print('--------------------------------')
-        print('--------------------------------')
+        print('--------------------------------'.encode('utf-8'))
+        print('--------------------------------'.encode('utf-8'))
         
         db_user.tg_id = message.from_user.id
         db_user.first_name = message.from_user.first_name if message.from_user.first_name else "Скрытое имя"
@@ -36,12 +36,12 @@ async def send_welcome(message:types.Message):
         db.commit()
         print(message.from_user.username)
         print(message.from_user.id)
-        print("КОММИТ")
-        print("КОММИТ")
-        print("КОММИТ")
-        print("КОММИТ")
-        print('--------------------------------')
-        print('--------------------------------')
+        print("КОММИТ".encode('utf-8'))
+        print("КОММИТ".encode('utf-8'))
+        print("КОММИТ".encode('utf-8'))
+        print("КОММИТ".encode('utf-8'))
+        print('--------------------------------'.encode('utf-8'))
+        print('--------------------------------'.encode('utf-8'))
 
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
