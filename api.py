@@ -107,9 +107,12 @@ async def create_question(new_question: schema.QuestionCreateSchema):
 
     # Create the new question with the determined question number
     new_question = Question(question_number=next_question_number, question=new_question.question, answer=new_question.answer, group_id=new_question.group_id)
-    db.add(new_question)
-    db.commit()
-    db.refresh(new_question)  # Refresh the object to get its updated state from the database
+    try:
+        db.add(new_question)
+        db.commit()
+        db.refresh(new_question)  # Refresh the object to get its updated state from the database
+    except:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Incorrect group_id or smth was wrong")
     return new_question
 
 
