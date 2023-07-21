@@ -12,12 +12,29 @@ async def add_username(username: str):
     db_user = db.query(User).filter(User.username == username).first()
     if db_user:
         raise HTTPException(status=status.HTTP_400_BAD_REQUEST, detail="Already existing user")
-    db_user.username = username
-    db.add(db_user)
+    new_user = User(username=username)
+    db.add(new_user)
     db.commit()
 
+    return {"message": "User added successfully"}
 
 
+@app.get('/users')
+async def get_users():
+    users = db.query(User).all()
+    response = []
+    for user in users:
+        data = {
+            "id": user.id,
+            "tg_id": user.tg_id,
+            "username": user.username,
+            "first_name": user.first_name,
+            "last_name": user.last_name
+        }
+
+        response.append(data)
+    
+    return response
 
 
 
