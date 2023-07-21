@@ -19,7 +19,7 @@ class User(Base):
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     phone_number = Column(String, nullable=True)
-
+    is_superuser = Column(Boolean, default=False)
 
 
 

@@ -8,13 +8,13 @@ app = FastAPI()
 
 
 @app.post('/add/username')
-async def add_username(phone_number: str = None):
+async def add_username(phone_number: str = None, is_superuser: bool = False):
     
     db_user_phone = db.query(User).filter(User.phone_number == phone_number).first()
     if db_user_phone:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone number already exists")
 
-    new_user = User(phone_number=phone_number)
+    new_user = User(phone_number=phone_number, is_superuser = is_superuser)
     db.add(new_user)
     db.commit()
 
@@ -32,7 +32,8 @@ async def get_users():
             "username": user.username,
             "first_name": user.first_name,
             "last_name": user.last_name,
-            "phone_number": user.phone_number
+            "phone_number": user.phone_number,
+            "is_superuser": user.is_superuser
         }
 
         response.append(data)

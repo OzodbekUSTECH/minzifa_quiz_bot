@@ -24,10 +24,20 @@ class CheckUserState(StatesGroup):
     put_number = State()
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message, state: FSMContext):
-    
-    await message.answer("Введите номер телефона:\n*Включительно'+998/+7' и без пробелов!\nНапример:+998905553535")
-    await CheckUserState.put_number.set()
-    
+    db_user = db.query(User).filter(User.tg_id == message.from_user.id).first()
+    if db_user:
+        kb = types.InlineKeyboardMarkup()
+        all_groups_of_qestions = db.query(GroupQuestion).all()
+        create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
+        if db_user.is_superuser:
+            kb.add(create_post)
+        for group in all_groups_of_qestions:
+            kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
+        await message.answer(text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
+    else:    
+        await message.answer("Введите номер телефона:\n*Включительно '+998/+7' и без пробелов!\nНапример:\n+998905553535\n+79015553535")
+        await CheckUserState.put_number.set()
+        
 
 @dp.message_handler(state=CheckUserState.put_number)
 async def process_phone_number(message: types.Message, state: FSMContext):
@@ -44,7 +54,8 @@ async def process_phone_number(message: types.Message, state: FSMContext):
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
         create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
-        kb.add(create_post)
+        if db_user.is_superuser:
+            kb.add(create_post)
         for group in all_groups_of_qestions:
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
 
@@ -60,11 +71,11 @@ async def process_phone_number(message: types.Message, state: FSMContext):
     else:
         try:
             await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
-            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text="Номер введен неправильно или у вас нет доступа!\nВведите номер еще раз!\nВключительно '+998/+7' и без пробелов!\n Например: <b>+998905553535</b>\n\nНапишите о проблеме Администратору @UnLuckyLoX")
+            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text="Номер введен неправильно или у вас нет доступа!\nВведите номер еще раз!\nВключительно '+998/+7' и без пробелов!\n Например: <b>+998905553535</b>\n\nНапишите о проблеме Администратору @UnLuckyLoX", parse_mode="HTML")
         except aiogram.utils.exceptions.MessageToEditNotFound:
             # Увеличиваем message_id на 1, если произошла ошибка "MessageToEditNotFound"
             message.message_id -= 1
-            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text="Номер введен неправильно или у вас нет доступа!\nВведите номер еще раз!\nБез +998\n Например: <b>905553535</b>\n\nНапишите о проблеме Администратору @UnLuckyLoX")
+            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text="Номер введен неправильно или у вас нет доступа!\nВведите номер еще раз!\nБез +998\n Например: <b>905553535</b>\n\nНапишите о проблеме Администратору @UnLuckyLoX", parse_mode="HTML")
 
         await CheckUserState.put_number.set()
 
@@ -129,13 +140,13 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
     back_to_questions = types.InlineKeyboardButton("Назад", callback_data=f"get_questions_of_group:{group_id}")
     kb.add(back_to_questions).add(back_to_topics)
     await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
-    edit_success = False
-    while not edit_success and message.message_id > 0:
-        try:
-            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
-            edit_success = True
-        except aiogram.utils.exceptions.MessageToEditNotFound:
-            message.message_id -= 1
+    
+    try:
+        await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
+    except aiogram.utils.exceptions.MessageToEditNotFound:
+        message.message_id -= 1
+        await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
+
 
     await state.reset_state(with_data=False)
     await state.finish()
@@ -148,7 +159,9 @@ async def get_topics_for_questions_again(callback_query: types.CallbackQuery, st
     kb = types.InlineKeyboardMarkup()
     all_groups_of_questions = db.query(GroupQuestion).all()
     create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/")) #ссылка на создание поста
-    kb.add(create_post)
+    db_user = db.query(User).filter(User.tg_id == callback_query.from_user.id).first()
+    if db_user.is_superuser:
+        kb.add(create_post)
     for group in all_groups_of_questions:
         kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
     await callback_query.message.edit_text("Выберите тематику вопроса:", reply_markup=kb, parse_mode="HTML")
