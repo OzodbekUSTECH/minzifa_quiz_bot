@@ -132,28 +132,23 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
     data = await state.get_data()
     group_id = data.get('group_id')
 
-    answer = db.query(Question).filter(Question.question_number == question_number).first()
+    answer = db.query(Question).filter(Question.question_number == question_number, Question.group_id == group_id).first()
 
     if not answer:
         await message.reply("Вопрос с указанным номером не найден. Пожалуйста, введите правильный номер.")
         return
 
-    if answer.group_id != group_id:
-        await message.reply("Вопрос с указанным номером не принадлежит выбранной группе. Пожалуйста, введите правильный номер.")
-        return
-    
-    
     # Update the message_text with the new horizontal line
     message_text = (
         f"Ответ на вопрос:\n"
         f"<u>{question_number}.{answer.question}</u>\n"
-        
         f"{answer.answer}"
     )
     kb = types.InlineKeyboardMarkup()
     back_to_topics = types.InlineKeyboardButton("Тематики", callback_data="back_to_topics_for_questions")
     back_to_questions = types.InlineKeyboardButton("Назад", callback_data=f"get_questions_of_group:{group_id}")
     kb.add(back_to_questions).add(back_to_topics)
+
     await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
     edit_success = False
     while not edit_success and message.message_id > 0:
@@ -162,7 +157,6 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
             edit_success = True
         except aiogram.utils.exceptions.MessageToEditNotFound:
             message.message_id -= 1
-
 
     await state.reset_state(with_data=False)
     await state.finish()
