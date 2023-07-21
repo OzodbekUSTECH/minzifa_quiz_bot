@@ -27,12 +27,11 @@ async def send_welcome(message: types.Message):
 
     db_user = db.query(User).filter(func.lower(User.username) == username).first()
     
-
     if db_user:
         db_user.tg_id = message.from_user.id
         db_user.first_name = message.from_user.first_name or "Скрытое имя"
         db_user.last_name = message.from_user.last_name or "Скрытая фамилия"
-        db_user.phone_number = message.contact.phone_number or "Скрытый номер телефона"
+        db_user.phone_number = message.contact.phone_number if message.contact else "Скрытый номер телефона"
         db.commit()
 
         kb = types.InlineKeyboardMarkup()
@@ -44,6 +43,7 @@ async def send_welcome(message: types.Message):
         await message.answer("Выберите тематику вопроса:", reply_markup=kb)
     else:
         pass
+
 
 
     
