@@ -144,9 +144,14 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
         f"<u>{question_number}.{answer.question}</u>\n\n"
         f"{answer.answer}"
     )
+
+    user = db.query(User).filter(User.tg_id == message.from_user.id).first()
     kb = types.InlineKeyboardMarkup()
-    back_to_topics = types.InlineKeyboardButton("Тематики", callback_data="back_to_topics_for_questions")
+    back_to_topics = types.InlineKeyboardButton("Вопросы", callback_data="back_to_topics_for_questions")
     back_to_questions = types.InlineKeyboardButton("Назад", callback_data=f"get_questions_of_group:{group_id}")
+    if user.is_superuser:
+        edit_btn =  types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/?question_id={answer.id}"))
+        kb.add(edit_btn)
     kb.add(back_to_questions).add(back_to_topics)
 
     await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
