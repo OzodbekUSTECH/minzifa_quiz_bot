@@ -59,23 +59,24 @@ async def process_phone_number(message: types.Message, state: FSMContext):
         for group in all_groups_of_qestions:
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
 
-        try:
-            await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
-            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
-        except aiogram.utils.exceptions.MessageToEditNotFound:
-            # Увеличиваем message_id на 1, если произошла ошибка "MessageToEditNotFound"
-            message.message_id -= 1
-            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
-
+        await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+        edit_success = False
+        while not edit_success and message.message_id > 0:
+            try:
+                await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
+                edit_success = True
+            except aiogram.utils.exceptions.MessageToEditNotFound:
+                message.message_id -= 1
         await state.finish()
     else:
-        try:
-            await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
-            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text="Номер введен неправильно или у вас нет доступа!\nВведите номер еще раз!\nВключительно '+998/+7' и без пробелов!\n Например: <b>+998905553535</b>\n\nНапишите о проблеме Администратору @UnLuckyLoX", parse_mode="HTML")
-        except aiogram.utils.exceptions.MessageToEditNotFound:
-            # Увеличиваем message_id на 1, если произошла ошибка "MessageToEditNotFound"
-            message.message_id -= 1
-            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text="Номер введен неправильно или у вас нет доступа!\nВведите номер еще раз!\nБез +998\n Например: <b>905553535</b>\n\nНапишите о проблеме Администратору @UnLuckyLoX", parse_mode="HTML")
+        await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+        edit_success = False
+        while not edit_success and message.message_id > 0:
+            try:
+                await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text="Номер введен неправильно или у вас нет доступа!\nВведите номер еще раз!\nВключительно '+998/+7' и без пробелов!\n Например: <b>+998905553535</b>\n\nНапишите о проблеме Администратору @UnLuckyLoX", parse_mode="HTML")
+                edit_success = True
+            except aiogram.utils.exceptions.MessageToEditNotFound:
+                message.message_id -= 1
 
         await CheckUserState.put_number.set()
 
@@ -140,12 +141,13 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
     back_to_questions = types.InlineKeyboardButton("Назад", callback_data=f"get_questions_of_group:{group_id}")
     kb.add(back_to_questions).add(back_to_topics)
     await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
-    
-    try:
-        await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
-    except aiogram.utils.exceptions.MessageToEditNotFound:
-        message.message_id -= 1
-        await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
+    edit_success = False
+    while not edit_success and message.message_id > 0:
+        try:
+            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
+            edit_success = True
+        except aiogram.utils.exceptions.MessageToEditNotFound:
+            message.message_id -= 1
 
 
     await state.reset_state(with_data=False)
