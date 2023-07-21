@@ -22,12 +22,12 @@ dp = Dispatcher(bot, storage=storage)
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message:types.Message):
-    username = db.query(User).filter(User.username == message.from_user.username).first()
-    if username:
-        username.tg_id = message.from_user.id
-        username.first_name = message.from_user.first_name if message.from_user.first_name else "Скрытое имя"
-        username.last_name = message.from_user.last_name if message.from_user.last_name else "Скрытая фамилия"
-        
+    db_user = db.query(User).filter(User.username == message.from_user.username).first()
+    if db_user:
+        db_user.tg_id = message.from_user.id
+        db_user.first_name = message.from_user.first_name if message.from_user.first_name else "Скрытое имя"
+        db_user.last_name = message.from_user.last_name if message.from_user.last_name else "Скрытая фамилия"
+        db.commit()
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
         create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/")) #ссылка на создание поста
@@ -36,8 +36,6 @@ async def send_welcome(message:types.Message):
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
         await message.answer("Выберите тематику вопроса:", reply_markup=kb)
 
-        db.commit()
-        db.refresh(username)
     else:
         pass
 
