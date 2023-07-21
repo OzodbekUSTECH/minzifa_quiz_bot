@@ -4,6 +4,17 @@ import schema
 app = FastAPI()
 
 
+@app.put('/user/{user_id}')
+async def update_user(user_id: int, first_name: str = None, last_name: str = None, is_superuser: bool = False):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    
+    if first_name is not None:
+        db_user.first_name = first_name
+    if last_name is not None:
+        db_user.last_name = last_name
+    db.commit()
+
+    return {"message":"Данные были изменены!"}
 
 
 
