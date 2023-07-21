@@ -93,19 +93,30 @@ class QuestionState(StatesGroup):
 async def get_all_questions_for_group(callback_query: types.CallbackQuery, state: FSMContext):
     group_id = int(callback_query.data.split(':')[-1])
 
-    all_questions = db.query(Question).filter(Question.group_id == group_id).all()
+    group = db.query(GroupQuestion).filter(GroupQuestion.id == group_id).first()
 
-    text = ""
-    for question in all_questions:
-        text += f"{question.question_number}. {question.question}\n"
+    if len(group.questions) == 1:
+        # The group has only an answer, no questions
+        text = (
+            f"Ответ:\n"
+            f"<u>{group.name}</u>\n"
+            f"{group.questions[0].answer}"
+            )
+    else:
+        # The group has questions
+        all_questions = db.query(Question).filter(Question.group_id == group_id).all()
 
-    text += "\nНапишите номер вопроса, чтобы получить ответ."
+        text = ""
+        for question in all_questions:
+            text += f"{question.question_number}. {question.question}\n"
+
+        text += "\nНапишите номер вопроса, чтобы получить ответ."
 
     kb = types.InlineKeyboardMarkup()
     back_to_topics = types.InlineKeyboardButton("Тематики", callback_data="back_to_topics_for_questions")
     kb.add(back_to_topics)
     await callback_query.message.edit_text(text=text, reply_markup=kb, parse_mode="HTML")
-    await state.update_data(group_id=group_id)  # Сохраняем group_id в состоянии пользователя
+    await state.update_data(group_id=group_id)
     await QuestionState.choice.set()
 
 @dp.message_handler(state=QuestionState.choice)
