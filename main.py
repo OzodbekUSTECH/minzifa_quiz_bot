@@ -22,7 +22,7 @@ dp = Dispatcher(bot, storage=storage)
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message:types.Message):
-    username = db.query(User).filter(User.username == message.from_user).first()
+    username = db.query(User).filter(User.username == message.from_user.username).first()
     if username:
         username.tg_id = message.from_user.id
         username.first_name = message.from_user.first_name if message.from_user.first_name else "Скрытое имя"
