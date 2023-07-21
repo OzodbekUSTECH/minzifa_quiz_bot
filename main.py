@@ -28,11 +28,13 @@ async def send_welcome(message: types.Message, state: FSMContext):
     if db_user:
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
-        create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
         if db_user.is_superuser:
+            create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
             kb.add(create_post)
+
         for group in all_groups_of_qestions:
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
+
         await message.answer(text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
     else:    
         await message.answer("Введите номер телефона:\n*Включительно '+998/+7' и без пробелов!\nНапример:\n+998905553535\n+79015553535")
@@ -53,12 +55,12 @@ async def process_phone_number(message: types.Message, state: FSMContext):
 
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
-        create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
         if db_user.is_superuser:
+            create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
             kb.add(create_post)
+
         for group in all_groups_of_qestions:
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
-
         await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
         edit_success = False
         while not edit_success and message.message_id > 0:
@@ -160,12 +162,14 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
 async def get_topics_for_questions_again(callback_query: types.CallbackQuery, state: FSMContext):
     kb = types.InlineKeyboardMarkup()
     all_groups_of_questions = db.query(GroupQuestion).all()
-    create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/")) #ссылка на создание поста
     db_user = db.query(User).filter(User.tg_id == callback_query.from_user.id).first()
     if db_user.is_superuser:
+        create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
         kb.add(create_post)
+
     for group in all_groups_of_questions:
         kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
+
     await callback_query.message.edit_text("Выберите тематику вопроса:", reply_markup=kb, parse_mode="HTML")
     await state.reset_state(with_data=False)
     await state.finish()
