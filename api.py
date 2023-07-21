@@ -12,6 +12,8 @@ async def update_user(user_id: int, first_name: str = None, last_name: str = Non
         db_user.first_name = first_name
     if last_name is not None:
         db_user.last_name = last_name
+    if is_superuser is not False:
+        db_user.is_superuser = is_superuser
     db.commit()
 
     return {"message":"Данные были изменены!"}
