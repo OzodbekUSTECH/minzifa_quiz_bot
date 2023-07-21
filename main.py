@@ -25,7 +25,7 @@ class CheckUserState(StatesGroup):
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message, state: FSMContext):
     
-    message.answer("Введите номер телефона:\n*Включительно'+998/+7' и без пробелов!\nНапример:+998905553535")
+    await message.answer("Введите номер телефона:\n*Включительно'+998/+7' и без пробелов!\nНапример:+998905553535")
     await CheckUserState.put_number.set()
     
 
