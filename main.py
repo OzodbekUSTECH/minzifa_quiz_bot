@@ -46,7 +46,10 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
 
     text += "\nНапишите номер вопроса, чтобы получить ответ."
 
-    await callback_query.message.edit_text(text=text)
+    kb = types.InlineKeyboardMarkup()
+    back_to_topics = types.InlineKeyboardButton("Тематики", callback_data="back_to_topics_for_questions")
+    kb.add(back_to_topics)
+    await callback_query.message.edit_text(text=text, reply_markup=kb, parse_mode="HTML")
     await state.update_data(group_id=group_id)  # Сохраняем group_id в состоянии пользователя
     await QuestionState.choice.set()
 
@@ -105,7 +108,7 @@ async def get_topics_for_questions_again(callback_query: types.CallbackQuery, st
     all_groups_of_questions = db.query(GroupQuestion).all()
     for group in all_groups_of_questions:
         kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
-    await callback_query.message.edit_text("Выберите тематику вопроса:", reply_markup=kb)
+    await callback_query.message.edit_text("Выберите тематику вопроса:", reply_markup=kb, parse_mode="HTML")
     await state.reset_state(with_data=False)
     await state.finish()
 
