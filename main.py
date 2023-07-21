@@ -8,7 +8,7 @@ from db import *
 from aiogram.types.web_app_info import WebAppInfo
 
 
-API_TOKEN = '6095169791:AAEQM5y8u1IPLPMhvOZDVQlqTDSMAadjmL0'  # Replace with your API token
+API_TOKEN = '6388758583:AAFzvBwYniZcklIfOFQYkX9sqAT4f3jlZtc'  # Replace with your API token
 
 
         
