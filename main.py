@@ -37,13 +37,14 @@ async def send_welcome(message: types.Message, state: FSMContext):
 
         for group in all_groups_of_qestions:
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
+
         menus = types.ReplyKeyboardMarkup(resize_keyboard=True)
         help_btn = types.KeyboardButton("Помощь")
         menus.add(help_btn)
-        combined_kb = kb.to_python()
-        combined_kb['keyboard'] = menus.to_python()['keyboard']
-        await message.answer(text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=combined_kb)
-
+        
+        await message.answer(text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}", reply_markup=menus)
+        await message.answer("Выберите тематику вопроса:", reply_markup=kb)
+        
         
         await state.finish()
     else:    
