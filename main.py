@@ -36,6 +36,12 @@ async def send_welcome(message: types.Message, state: FSMContext):
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
 
         await message.answer(text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
+
+        menus = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        help_btn = types.KeyboardButton("Помощь")
+        menus.add(help_btn)
+        await message.edit_reply_markup()
+        await state.finish()
     else:    
         await message.answer("Введите номер телефона:\n*Включительно '+998/+7' и без пробелов!\nНапример:\n+998905553535\n+79015553535")
         await CheckUserState.put_number.set()
@@ -46,11 +52,11 @@ async def process_phone_number(message: types.Message, state: FSMContext):
     phone_number = message.text
     db_user = db.query(User).filter(User.phone_number == phone_number).first()
 
-    if db_user:
+    if db_user and db_user.tg_id is None:
         db_user.tg_id = message.from_user.id
         db_user.username = message.from_user.username or "Скрытый username"
-        db_user.first_name = message.from_user.first_name or "Скрытое имя"
-        db_user.last_name = message.from_user.last_name or "Скрытая фамилия"
+        db_user.first_name = message.from_user.first_name or "😄"
+        db_user.last_name = message.from_user.last_name or "😄"
         db.commit()
 
         kb = types.InlineKeyboardMarkup()
