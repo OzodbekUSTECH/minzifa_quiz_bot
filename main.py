@@ -97,10 +97,7 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
     user = db.query(User).filter(User.tg_id == callback_query.from_user.id).first()
     kb = types.InlineKeyboardMarkup()
     back_to_topics = types.InlineKeyboardButton("Вопросы", callback_data="back_to_topics_for_questions")
-    if user.is_superuser:
-        create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://ozodbekustech.github.io/QAedit/create.html"))
-        kb.add(create_post)
-    kb.add(back_to_topics)
+    
     if len(group.questions) == 1:
         # The group has only an answer, no questions
         text = (
@@ -122,7 +119,10 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
 
         text += "\nНапишите номер вопроса, чтобы получить ответ."
 
-    
+    if user.is_superuser:
+        create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://ozodbekustech.github.io/QAedit/create.html"))
+        kb.add(create_post)
+    kb.add(back_to_topics)
     await callback_query.message.edit_text(text=text, reply_markup=kb, parse_mode="HTML")
     await state.update_data(group_id=group_id)
     await QuestionState.choice.set()
