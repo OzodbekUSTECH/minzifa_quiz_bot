@@ -40,7 +40,7 @@ async def send_welcome(message: types.Message, state: FSMContext):
         menus = types.ReplyKeyboardMarkup(resize_keyboard=True)
         help_btn = types.KeyboardButton("Помощь")
         menus.add(help_btn)
-        await message.edit_reply_markup()
+        await message.edit_reply_markup(reply_markup=menus)
         await state.finish()
     else:    
         await message.answer("Введите номер телефона:\n*Включительно '+998/+7' и без пробелов!\nНапример:\n+998905553535\n+79015553535")
