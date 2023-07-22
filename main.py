@@ -51,6 +51,26 @@ async def send_welcome(message: types.Message, state: FSMContext):
         await message.answer("Введите номер телефона:\n*Включительно '+998/+7' и без пробелов!\nНапример:\n+998905553535\n+79015553535")
         await CheckUserState.put_number.set()
         
+@dp.message_handler()
+async def delete_every_unneeded_msg(message: types.Message, state: FSMContext):
+    if message.text != "Помощь":
+        await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+
+    await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+    edit_success = False
+    while not edit_success and message.message_id > 0:
+        try:
+            message_text = (
+                "Напишите свой вопрос @DjabbarovTim и ожидайте ответа.\nВремя ответа в среднем 10 минут."
+            )
+            kb = types.InlineKeyboardMarkup()
+            back_to_topics = types.InlineKeyboardButton("Вопросы", callback_data="back_to_topics_for_questions")
+            kb.add(back_to_topics)
+            await message.edit_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb)
+        except aiogram.utils.exceptions.MessageToEditNotFound:
+                message.message_id -= 1
+
+    await state.finish()
 
 @dp.message_handler(state=CheckUserState.put_number)
 async def process_phone_number(message: types.Message, state: FSMContext):
