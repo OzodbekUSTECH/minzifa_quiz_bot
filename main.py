@@ -66,7 +66,7 @@ async def delete_every_unneeded_msg(message: types.Message, state: FSMContext):
             kb = types.InlineKeyboardMarkup()
             back_to_topics = types.InlineKeyboardButton("Вопросы", callback_data="back_to_topics_for_questions")
             kb.add(back_to_topics)
-            await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb)
+            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb)
         except aiogram.utils.exceptions.MessageToEditNotFound:
                 message.message_id -= 1
 
