@@ -109,9 +109,9 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
             f"{group.questions[0].answer}"
             )
         if user.is_superuser:
-            edit_btn =  types.InlineKeyboardButton(text="Редактировать", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/?question_id={group.questions[0].answer.id}"))
+            edit_btn =  types.InlineKeyboardButton(text="Редактировать", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/?question_id={group.questions[0].id}"))
             kb.add(edit_btn)
-            
+
     else:
         # The group has questions
         all_questions = db.query(Question).filter(Question.group_id == group_id).order_by('question_number').all()
