@@ -102,7 +102,7 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
         # The group has only an answer, no questions
         text = (
             f"Ответ:\n"
-            f"<u>{group.name}</u>\n\n"
+            f"<u>{group.questions[0].question}</u>\n\n"
             f"{group.questions[0].answer}"
             )
         if user.is_superuser:
@@ -161,15 +161,15 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
         edit_btn =  types.InlineKeyboardButton(text="Редактировать", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/editqa.html?question_id={answer.id}"))
         kb.add(edit_btn)
     kb.add(back_to_questions).add(back_to_topics)
-
-    await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
-    edit_success = False
-    while not edit_success and message.message_id > 0:
-        try:
-            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
-            edit_success = True
-        except aiogram.utils.exceptions.MessageToEditNotFound:
-            message.message_id -= 1
+    await message.answer(text=message_text, reply_markup=kb, parse_mode="HTML")
+    # await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+    # edit_success = False
+    # while not edit_success and message.message_id > 0:
+    #     try:
+    #         await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
+    #         edit_success = True
+    #     except aiogram.utils.exceptions.MessageToEditNotFound:
+    #         message.message_id -= 1
 
     await state.reset_state(with_data=False)
     await state.finish()
