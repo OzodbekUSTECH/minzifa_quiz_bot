@@ -22,25 +22,29 @@ dp = Dispatcher(bot, storage=storage)
 from sqlalchemy import func
 class CheckUserState(StatesGroup):
     put_number = State()
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
+from aiogram.dispatcher.filters import Command
 @dp.message_handler(commands=['start'], state="*")
 async def send_welcome(message: types.Message, state: FSMContext):
     db_user = db.query(User).filter(User.tg_id == message.from_user.id).first()
     if db_user:
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
+        
         if db_user.is_superuser:
             create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://ozodbekustech.github.io/QAedit/bscreate.html"))
             kb.add(create_post)
 
         for group in all_groups_of_qestions:
             kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
-
-        await message.answer(text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
-
         menus = types.ReplyKeyboardMarkup(resize_keyboard=True)
         help_btn = types.KeyboardButton("Помощь")
         menus.add(help_btn)
-        await message.edit_reply_markup(reply_markup=menus)
+        combined_kb = kb.to_python()
+        combined_kb['keyboard'] = menus.to_python()['keyboard']
+        await message.answer(text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
+
+        
         await state.finish()
     else:    
         await message.answer("Введите номер телефона:\n*Включительно '+998/+7' и без пробелов!\nНапример:\n+998905553535\n+79015553535")
