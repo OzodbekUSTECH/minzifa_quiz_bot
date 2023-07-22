@@ -99,6 +99,7 @@ async def get_group_by_id(group_id: int):
 
     return response
 
+
 @app.post('/group', response_model=schema.GroupSchema)
 async def group_create(name: str):
     new_group = GroupQuestion(name=name)
@@ -120,7 +121,15 @@ async def group_update(group_id: int, name: str):
 
         return db_group
 
+@app.delete('/group/{group_id}', response_model=schema.GroupSchema)
+async def delete_group(group_id: int, name: str):
+        db_group = db.query(GroupQuestion).filter(GroupQuestion.id == group_id).first()
+        for question in db_group.questions:
+            db.delete(question)
+        db.delete(db_group)
+        db.commit()
 
+        return db_group
 ###############################################################################################################################
 ###############################################################################################################################
 
