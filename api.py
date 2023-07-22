@@ -122,7 +122,7 @@ async def group_update(group_id: int, name: str):
         return db_group
 
 @app.delete('/group/{group_id}', response_model=schema.GroupSchema)
-async def delete_group(group_id: int, name: str):
+async def delete_group(group_id: int):
         db_group = db.query(GroupQuestion).filter(GroupQuestion.id == group_id).first()
         for question in db_group.questions:
             db.delete(question)
