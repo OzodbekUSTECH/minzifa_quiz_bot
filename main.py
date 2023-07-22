@@ -22,7 +22,7 @@ dp = Dispatcher(bot, storage=storage)
 from sqlalchemy import func
 class CheckUserState(StatesGroup):
     put_number = State()
-@dp.message_handler(commands=['start'])
+@dp.message_handler(commands=['start'], state="*")
 async def send_welcome(message: types.Message, state: FSMContext):
     db_user = db.query(User).filter(User.tg_id == message.from_user.id).first()
     if db_user:
