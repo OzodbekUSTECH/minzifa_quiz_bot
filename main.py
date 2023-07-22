@@ -29,7 +29,7 @@ async def send_welcome(message: types.Message, state: FSMContext):
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
         if db_user.is_superuser:
-            create_post = types.InlineKeyboardButton(text="Создать Пост", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
+            create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://ozodbekustech.github.io/QAedit/create.html"))
             kb.add(create_post)
 
         for group in all_groups_of_qestions:
@@ -56,7 +56,7 @@ async def process_phone_number(message: types.Message, state: FSMContext):
         kb = types.InlineKeyboardMarkup()
         all_groups_of_qestions = db.query(GroupQuestion).all()
         if db_user.is_superuser:
-            create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
+            create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://ozodbekustech.github.io/QAedit/create.html"))
             kb.add(create_post)
 
         for group in all_groups_of_qestions:
@@ -94,6 +94,7 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
     group_id = int(callback_query.data.split(':')[-1])
 
     group = db.query(GroupQuestion).filter(GroupQuestion.id == group_id).first()
+    user = db.query(User).filter(User.tg_id == callback_query.from_user.id).first()
 
     if len(group.questions) == 1:
         # The group has only an answer, no questions
@@ -102,6 +103,8 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
             f"<u>{group.name}</u>\n\n"
             f"{group.questions[0].answer}"
             )
+        
+        
     else:
         # The group has questions
         all_questions = db.query(Question).filter(Question.group_id == group_id).order_by('question_number').all()
@@ -114,6 +117,9 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
 
     kb = types.InlineKeyboardMarkup()
     back_to_topics = types.InlineKeyboardButton("Вопросы", callback_data="back_to_topics_for_questions")
+    if user.is_superuser:
+        create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://ozodbekustech.github.io/QAedit/create.html"))
+        kb.add(create_post)
     kb.add(back_to_topics)
     await callback_query.message.edit_text(text=text, reply_markup=kb, parse_mode="HTML")
     await state.update_data(group_id=group_id)
@@ -175,7 +181,7 @@ async def get_topics_for_questions_again(callback_query: types.CallbackQuery, st
     all_groups_of_questions = db.query(GroupQuestion).all()
     db_user = db.query(User).filter(User.tg_id == callback_query.from_user.id).first()
     if db_user.is_superuser:
-        create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://vladlenkhan.github.io/minzifa/"))
+        create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://ozodbekustech.github.io/QAedit/create.html"))
         kb.add(create_post)
 
     for group in all_groups_of_questions:
