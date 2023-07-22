@@ -97,16 +97,16 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
     user = db.query(User).filter(User.tg_id == callback_query.from_user.id).first()
     kb = types.InlineKeyboardMarkup()
     back_to_topics = types.InlineKeyboardButton("Вопросы", callback_data="back_to_topics_for_questions")
-    
+
     if len(group.questions) == 1:
         # The group has only an answer, no questions
         text = (
             f"Ответ:\n"
             f"<u>{group.questions[0].question}</u>\n\n"
             f"{group.questions[0].answer}"
-            )
+        )
         if user.is_superuser:
-            edit_btn =  types.InlineKeyboardButton(text="Редактировать", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/editqa.html?question_id={group.questions[0].id}"))
+            edit_btn = types.InlineKeyboardButton(text="Редактировать", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/editqa.html?question_id={group.questions[0].id}"))
             kb.add(edit_btn)
 
     else:
@@ -123,9 +123,11 @@ async def get_all_questions_for_group(callback_query: types.CallbackQuery, state
         create_post = types.InlineKeyboardButton(text="Создать Q&A", web_app=WebAppInfo(url="https://ozodbekustech.github.io/QAedit/bscreate.html"))
         kb.add(create_post)
     kb.add(back_to_topics)
-    await callback_query.message.edit_text(text=text, reply_markup=kb, parse_mode="HTML")
+
+    await bot.edit_message_text(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id, text=text, reply_markup=kb, parse_mode="HTML")
     await state.update_data(group_id=group_id)
     await QuestionState.choice.set()
+
 
 @dp.message_handler(state=QuestionState.choice)
 async def get_answer_for_question(message: types.Message, state: FSMContext):
@@ -158,20 +160,17 @@ async def get_answer_for_question(message: types.Message, state: FSMContext):
     back_to_topics = types.InlineKeyboardButton("Вопросы", callback_data="back_to_topics_for_questions")
     back_to_questions = types.InlineKeyboardButton("Назад", callback_data=f"get_questions_of_group:{group_id}")
     if user.is_superuser:
-        edit_btn =  types.InlineKeyboardButton(text="Редактировать", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/editqa.html?question_id={answer.id}"))
+        edit_btn = types.InlineKeyboardButton(text="Редактировать", web_app=WebAppInfo(url=f"https://ozodbekustech.github.io/QAedit/editqa.html?question_id={answer.id}"))
         kb.add(edit_btn)
     kb.add(back_to_questions).add(back_to_topics)
-    # await message.answer(text=message_text, reply_markup=kb, parse_mode="HTML") так быстрее
-    await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
-    edit_success = False
-    while not edit_success and message.message_id > 0:
-        try:
-            await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
-            edit_success = True
-        except aiogram.utils.exceptions.MessageToEditNotFound:
-            message.message_id -= 1
 
-    # await state.reset_state(with_data=False)
+    # Remove the user's input message (question number)
+    await bot.delete_message(chat_id=message.from_user.id, message_id=message.message_id)
+
+    # Edit the original message with the answer
+    await bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id - 1, text=message_text, reply_markup=kb, parse_mode="HTML")
+    
+    # Finish the state after displaying the answer
     await state.finish()
 
 
