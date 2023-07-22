@@ -42,7 +42,7 @@ async def send_welcome(message: types.Message, state: FSMContext):
         menus.add(help_btn)
         combined_kb = kb.to_python()
         combined_kb['keyboard'] = menus.to_python()['keyboard']
-        await message.answer(text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=kb)
+        await message.answer(text=f"Здравствуйте, {db_user.first_name} {db_user.last_name}\n\nВыберите тематику вопроса:", reply_markup=combined_kb)
 
         
         await state.finish()
