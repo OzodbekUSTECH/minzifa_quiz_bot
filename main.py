@@ -190,7 +190,7 @@ async def get_topics_for_questions_again(callback_query: types.CallbackQuery, st
         kb.add(types.InlineKeyboardButton(text=f"{group.name}", callback_data=f"get_questions_of_group:{group.id}"))
 
     await callback_query.message.edit_text("Выберите тематику вопроса:", reply_markup=kb, parse_mode="HTML")
-    await state.reset_state(with_data=False)
+    # await state.reset_state(with_data=False)
     await state.finish()
 
 
